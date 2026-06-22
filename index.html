@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="可参数化的 WebGL 流体噪声背景，受 federicopian.com 启发。Parameterized WebGL fluid-noise background inspired by federicopian.com."
+  />
+  <title>流体噪声背景 / Fluid Noise Background</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 流体噪声画布 / fluid-noise canvas -->
+  <canvas id="bg" class="bg" aria-hidden="true"></canvas>
+
+  <!-- 暗化 + 胶片颗粒叠加层 / dark overlay + film grain -->
+  <div class="glass-overlay" aria-hidden="true"></div>
+
+  <main class="app">
+    <!-- 左侧文案预览 / hero preview -->
+    <section class="hero">
+      <p class="eyebrow">Liquid Noise · WebGL</p>
+      <h1>
+        <span class="zh">流体噪声背景</span>
+        <span class="en">Fluid Noise Background</span>
+      </h1>
+      <p class="sub">
+        基于 Simplex 噪声与域漂移的自然流体扰动，所有色调与运动参数可实时调节。<br />
+        Simplex-noise fluid motion with live-tunable palette &amp; motion.
+      </p>
+    </section>
+
+    <!-- 右侧参数面板 / control panel -->
+    <aside class="panel" id="panel" aria-label="参数面板 / Controls">
+      <header class="panel-head">
+        <div>
+          <p class="kicker">流动实验室 / Flow Lab</p>
+          <h2>参数调节 / Parameters</h2>
+        </div>
+        <button id="collapseBtn" class="icon-btn" type="button"
+          aria-controls="panel" aria-expanded="true" title="收起 / Collapse">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </header>
+
+      <!-- 色板 / Palette -->
+      <section class="group">
+        <div class="group-head">
+          <h3>色板 / Palette</h3>
+          <label class="select">
+            <span>预设 / Preset</span>
+            <select id="presetSelect" aria-label="预设色板 / Preset palette"></select>
+          </label>
+        </div>
+        <div class="palette">
+          <label class="color-row">
+            <span>高光 / Bright</span>
+            <input type="color" data-color="colorBright" value="#ff9655" />
+            <code data-code="colorBright">#ff9655</code>
+          </label>
+          <label class="color-row">
+            <span>中间 / Mid</span>
+            <input type="color" data-color="colorMid" value="#b93c64" />
+            <code data-code="colorMid">#b93c64</code>
+          </label>
+          <label class="color-row">
+            <span>阴影 / Shadow</span>
+            <input type="color" data-color="colorShadow" value="#160a10" />
+            <code data-code="colorShadow">#160a10</code>
+          </label>
+        </div>
+      </section>
+
+      <!-- 运动 / Motion -->
+      <section class="group">
+        <div class="group-head">
+          <h3>运动 / Motion</h3>
+          <label class="switch">
+            <input type="checkbox" data-param="animate" checked />
+            <span>动画 / Animate</span>
+          </label>
+        </div>
+        <label class="range-row">
+          <span>速度 / Speed</span>
+          <input type="range" min="0" max="1.2" step="0.01" value="0.2" data-param="speed" />
+          <output data-out="speed">0.20</output>
+        </label>
+        <label class="range-row">
+          <span>尺度 / Scale</span>
+          <input type="range" min="0.8" max="6" step="0.01" value="1.9" data-param="scale" />
+          <output data-out="scale">1.90</output>
+        </label>
+        <label class="range-row">
+          <span>漂移 / Flow</span>
+          <input type="range" min="0" max="2" step="0.01" value="0.5" data-param="flow" />
+          <output data-out="flow">0.50</output>
+        </label>
+        <label class="range-row">
+          <span>扰动 / Distort</span>
+          <input type="range" min="0" max="1.4" step="0.01" value="0.5" data-param="distort" />
+          <output data-out="distort">0.50</output>
+        </label>
+        <label class="range-row">
+          <span>对比 / Contrast</span>
+          <input type="range" min="0.15" max="1" step="0.01" value="0.52" data-param="contrast" />
+          <output data-out="contrast">0.52</output>
+        </label>
+      </section>
+
+      <!-- 质感 / Surface（CSS 叠加层） -->
+      <section class="group">
+        <div class="group-head"><h3>质感 / Surface</h3></div>
+        <label class="range-row">
+          <span>暗度 / Dim</span>
+          <input type="range" min="0" max="0.7" step="0.01" value="0.22" data-param="overlay" />
+          <output data-out="overlay">0.22</output>
+        </label>
+        <label class="range-row">
+          <span>颗粒 / Grain</span>
+          <input type="range" min="0" max="0.9" step="0.01" value="0.42" data-param="grain" />
+          <output data-out="grain">0.42</output>
+        </label>
+      </section>
+
+      <!-- 导出 / Export -->
+      <section class="group export">
+        <div class="group-head">
+          <h3>导出 / Export</h3>
+          <div class="btn-row">
+            <button id="copyJson" type="button">复制 JSON</button>
+            <button id="downloadJson" type="button">下载</button>
+          </div>
+        </div>
+        <pre id="configOut" class="config-out" aria-live="polite"></pre>
+        <p id="copyStatus" class="copy-status" role="status"></p>
+      </section>
+    </aside>
+
+    <button id="expandBtn" class="expand-btn" type="button"
+      aria-controls="panel" aria-expanded="false" title="展开 / Expand" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+      参数 / Controls
+    </button>
+  </main>
+
+  <script src="src/createFluidNoise.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

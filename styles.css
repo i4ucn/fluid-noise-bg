@@ -1,0 +1,233 @@
+:root {
+  --overlay-alpha: 0.22; /* 暗化层透明度，由面板控制 */
+  --grain-opacity: 0.42; /* 颗粒强度，由面板控制 */
+  --fg: #f3efe9;
+  --fg-dim: rgba(243, 239, 233, 0.62);
+  --panel-bg: rgba(18, 16, 18, 0.62);
+  --panel-line: rgba(255, 255, 255, 0.12);
+  --accent: #ff9655;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* hidden 属性必须能覆盖下面 .panel/.expand-btn 的 display 设置，
+   否则面板/展开按钮无法真正隐藏（作者样式优先级高于 UA 的 [hidden]）。 */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; background: #0c0b0c; color-scheme: dark; }
+
+body {
+  font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  color: var(--fg);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- 背景画布 / canvas ---- */
+.bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+
+/* ---- 暗化 + 胶片颗粒叠加层 / overlay + grain ---- */
+.glass-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transform: translateZ(0);
+  background: rgba(0, 0, 0, var(--overlay-alpha));
+}
+.glass-overlay::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("assets/background-noise.png");
+  animation: noise 2s steps(3) infinite both;
+}
+@keyframes noise {
+  0%   { transform: translateZ(0); }
+  10%  { transform: translate3d(-5%, -5%, 0); }
+  20%  { transform: translate3d(-10%, 5%, 0); }
+  30%  { transform: translate3d(5%, -10%, 0); }
+  40%  { transform: translate3d(-5%, 15%, 0); }
+  50%  { transform: translate3d(-10%, 5%, 0); }
+  60%  { transform: translate3d(15%, 0, 0); }
+  70%  { transform: translate3d(10%, 0, 0); }
+  80%  { transform: translate3d(-15%, 0, 0); }
+  90%  { transform: translate3d(10%, 5%, 0); }
+  100% { transform: translate3d(15%, 8%, 0); }
+}
+
+/* ---- 布局 / layout ---- */
+.app {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(1.25rem, 3.5vw, 3rem);
+}
+
+/* ---- 文案 / hero ---- */
+.hero {
+  align-self: center;
+  max-width: 40ch;
+}
+.eyebrow {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin-bottom: 1rem;
+}
+.hero h1 { line-height: 0.98; letter-spacing: -0.02em; }
+.hero h1 .zh { display: block; font-size: clamp(2.2rem, 6vw, 4.6rem); font-weight: 600; }
+.hero h1 .en { display: block; font-size: clamp(1rem, 2.2vw, 1.6rem); font-weight: 400; color: var(--fg-dim); margin-top: 0.4rem; }
+.hero .sub { margin-top: 1.4rem; font-size: clamp(0.9rem, 1.4vw, 1.05rem); line-height: 1.6; color: var(--fg-dim); }
+
+/* ---- 控制面板 / panel ---- */
+.panel {
+  width: clamp(280px, 30vw, 360px);
+  align-self: stretch;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-line);
+  border-radius: 18px;
+  padding: 1.1rem 1.15rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.kicker { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--fg-dim); }
+.panel-head h2 { font-size: 1.1rem; font-weight: 600; margin-top: 0.15rem; }
+
+.icon-btn, .expand-btn {
+  appearance: none;
+  border: 1px solid var(--panel-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+.icon-btn { width: 34px; height: 34px; flex: none; }
+.icon-btn:hover, .expand-btn:hover { background: rgba(255, 255, 255, 0.14); }
+.icon-btn svg, .expand-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.expand-btn {
+  position: fixed;
+  top: clamp(1.25rem, 3.5vw, 3rem);
+  right: clamp(1.25rem, 3.5vw, 3rem);
+  z-index: 3;
+  gap: 0.4rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.82rem;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* 分组 / group */
+.group { border-top: 1px solid var(--panel-line); padding-top: 0.9rem; }
+.panel-head + .group { border-top: none; padding-top: 0; }
+.group-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.7rem; }
+.group-head h3 { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fg-dim); }
+
+/* 色板 / palette */
+.palette { display: flex; flex-direction: column; gap: 0.5rem; }
+.color-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 0.6rem; font-size: 0.85rem; }
+.color-row input[type=color] {
+  width: 34px; height: 26px; padding: 0; border: 1px solid var(--panel-line);
+  border-radius: 7px; background: none; cursor: pointer;
+}
+.color-row input[type=color]::-webkit-color-swatch-wrapper { padding: 2px; }
+.color-row input[type=color]::-webkit-color-swatch { border: none; border-radius: 5px; }
+.color-row code { font-size: 0.72rem; color: var(--fg-dim); font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+
+/* 下拉 / select */
+.select { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--fg-dim); }
+.select select {
+  appearance: none; background: rgba(255, 255, 255, 0.06); color: var(--fg);
+  border: 1px solid var(--panel-line); border-radius: 8px; padding: 0.3rem 0.5rem;
+  font-size: 0.78rem; cursor: pointer;
+  color-scheme: dark; /* 让原生下拉弹层使用深色 */
+}
+/* 显式设置选项配色，避免弹层白底白字 */
+.select select option { background: #1a181a; color: var(--fg); }
+
+/* 滑块 / range */
+.range-row { display: grid; grid-template-columns: 4.5rem 1fr 2.6rem; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; font-size: 0.82rem; }
+.range-row span { color: var(--fg-dim); }
+.range-row output { text-align: right; font-size: 0.74rem; color: var(--fg); font-variant-numeric: tabular-nums; font-family: ui-monospace, Menlo, Consolas, monospace; }
+input[type=range] {
+  -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--accent); border: 2px solid #fff; cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; cursor: pointer;
+}
+
+/* 开关 / switch */
+.switch { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; color: var(--fg-dim); cursor: pointer; }
+.switch input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+/* 按钮组 / buttons */
+.btn-row { display: flex; gap: 0.4rem; }
+.btn-row button {
+  appearance: none; border: 1px solid var(--panel-line); background: rgba(255, 255, 255, 0.06);
+  color: var(--fg); border-radius: 8px; padding: 0.32rem 0.6rem; font-size: 0.74rem; cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn-row button:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* 导出预览 / config output */
+.config-out {
+  margin-top: 0.2rem; padding: 0.7rem 0.8rem; border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35); border: 1px solid var(--panel-line);
+  font-size: 0.72rem; line-height: 1.5; color: #d8e7c8; white-space: pre;
+  overflow-x: auto; font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.copy-status { min-height: 1em; margin-top: 0.45rem; font-size: 0.72rem; color: var(--accent); }
+
+/* ---- 响应式 / responsive ---- */
+@media (max-width: 760px) {
+  .app { flex-direction: column; }
+  .hero { align-self: flex-start; }
+  .panel {
+    position: fixed; right: 0; bottom: 0; top: auto; left: 0;
+    width: 100%; max-height: 62vh; border-radius: 18px 18px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-overlay::after { animation: none; }
+}
