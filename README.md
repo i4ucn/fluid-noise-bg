@@ -7,6 +7,7 @@ A dependency-free, parameterized **WebGL fluid-noise background**, inspired by [
 The palette model is "**light base + soft saturated blobs + subtle highlights**" (not black-based): 3D Simplex noise forms large, round, separated blobs that slowly drift and independently fade in/out (breathing), with a live control panel (palette / motion / surface / export).
 
 展示页面：https://i4ucn.github.io/fluid-noise-bg/ 
+![项目截图](./ScreenShot.png)
 
 ## ✨ 功能 / Features
 
