@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo · 流体噪声背景 / Fluid Noise Background</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      color: #2b2622; overflow: hidden; -webkit-font-smoothing: antialiased;
+    }
+
+    /* 流体噪声画布 / fluid-noise canvas */
+    #bg { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+
+    /* 暗化 + 胶片颗粒叠加层 / dim overlay + film grain（页面侧，由 JSON 的 overlay/grain 驱动）*/
+    .grain {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      transform: translateZ(0);
+      background: rgba(0, 0, 0, var(--overlay-alpha, 0));
+    }
+    .grain::after {
+      content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      opacity: var(--grain-opacity, 0.22);
+      background-image: url("assets/background-noise.png");
+      animation: noise 2s steps(3) infinite both;
+    }
+    @keyframes noise {
+      0%   { transform: translateZ(0); }
+      10%  { transform: translate3d(-5%, -5%, 0); }
+      20%  { transform: translate3d(-10%, 5%, 0); }
+      30%  { transform: translate3d(5%, -10%, 0); }
+      40%  { transform: translate3d(-5%, 15%, 0); }
+      50%  { transform: translate3d(-10%, 5%, 0); }
+      60%  { transform: translate3d(15%, 0, 0); }
+      70%  { transform: translate3d(10%, 0, 0); }
+      80%  { transform: translate3d(-15%, 0, 0); }
+      90%  { transform: translate3d(10%, 5%, 0); }
+      100% { transform: translate3d(15%, 8%, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .grain::after { animation: none; } }
+
+    /* 极简居中标题（仅示意，可删）/ minimal centered caption (optional) */
+    .caption {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    }
+    .caption h1 { font-size: clamp(2rem, 6vw, 4.2rem); font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    .caption p { margin-top: 0.7rem; font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.55; }
+  </style>
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+
+  <div class="caption">
+    <h1>流体噪声背景Demo</h1>
+    <p>Fluid Noise Background</p>
+  </div>
+
+  <script src="src/createFluidNoise.js"></script>
+  <script>
+    /* ----------------------------------------------------------------
+     * 这段 CONFIG 直接来自 index.html 参数面板的「导出 / Export」JSON。
+     * This CONFIG is pasted verbatim from index.html's Export panel.
+     * 想换风格？把面板导出的 JSON 整段替换即可。
+     * Want another look? Replace the whole object with your exported JSON.
+     * -------------------------------------------------------------- */
+    const CONFIG = {
+      "colorBase": "#c3e7fb",
+      "colorMid": "#8c8db8",
+      "colorBright": "#e3f3fe",
+      "speed": 0.16,
+      "scale": 1.4,
+      "flow": 0.4,
+      "distort": 0.35,
+      "density": 0.25,
+      "breath": 0.7,
+      "contrast": 0.6,
+      "animate": true,
+      "overlay": 0,
+      "grain": 0.22
+    };
+
+    /* 引擎参数：CONFIG 里多出的 overlay/grain 会被引擎忽略，无需手动剔除。
+       Engine params: the extra overlay/grain keys are ignored by the engine. */
+    createFluidNoise(document.getElementById("bg"), CONFIG);
+
+    /* overlay / grain 是页面侧的 CSS 叠加层，用 CSS 变量应用。
+       overlay / grain are page-side CSS layers, applied via CSS variables. */
+    const root = document.documentElement.style;
+    root.setProperty("--overlay-alpha", CONFIG.overlay != null ? CONFIG.overlay : 0);
+    root.setProperty("--grain-opacity", CONFIG.grain != null ? CONFIG.grain : 0.22);
+  </script>
+</body>
+</html>
