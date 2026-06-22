@@ -6,9 +6,11 @@ A dependency-free, parameterized **WebGL fluid-noise background**, inspired by [
 配色模型为「**浅色底 + 柔和饱和色块 + 轻微高光**」（非黑底）：用 3D Simplex 噪声生成大而圆润、彼此分离的色块，并让它们缓慢漂移、各自淡入淡出（呼吸感）；并提供一个实时参数面板（色板 / 运动 / 质感 / 导出）。
 The palette model is "**light base + soft saturated blobs + subtle highlights**" (not black-based): 3D Simplex noise forms large, round, separated blobs that slowly drift and independently fade in/out (breathing), with a live control panel (palette / motion / surface / export).
 
+展示页面：https://i4ucn.github.io/fluid-noise-bg/ 
+
 ## ✨ 功能 / Features
 
-- 🎨 **实时调色** — 底色 / 流色 / 高光三色 + 6 套预设（前 3 套忠实还原 [federicopian.com](https://www.federicopian.com/) 的背景色）/ 3 colors + 6 presets (first 3 faithfully reproduce the reference backgrounds)
+- 🎨 **实时调色** — 底色 / 流色 / 高光三色 + 6 套预设 / 3 colors + 6 presets 
 - 🫧 **圆润色块** — `density` 控制覆盖率，低覆盖 → 孤立圆斑而非杂乱条带 / `density` controls coverage: low → isolated round blobs, not tangled bands
 - 🌬️ **呼吸感** — `breath` 让每个色块按各自节奏淡入淡出 / `breath` fades each blob in and out on its own rhythm
 - 🌊 **运动参数** — 速度、尺度、漂移、扰动、对比，动画可开关 / speed, scale, flow, distort, contrast, animate toggle
