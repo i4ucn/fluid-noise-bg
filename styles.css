@@ -172,17 +172,24 @@ body {
 /* 下拉 / select */
 .select { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--fg-dim); }
 .select select {
-  appearance: none; background: rgba(0, 0, 0, 0.04); color: var(--fg);
-  border: 1px solid var(--panel-line); border-radius: 8px; padding: 0.3rem 0.5rem;
+  appearance: none; color: var(--fg);
+  border: 1px solid var(--panel-line); border-radius: 8px;
+  padding: 0.3rem 1.5rem 0.3rem 0.5rem; /* 右侧留出箭头空间 / room for caret */
   font-size: 0.78rem; cursor: pointer;
   color-scheme: light; /* 让原生下拉弹层使用浅色 */
+  /* 自定义下拉箭头（appearance:none 会移除原生箭头）/ custom caret */
+  background-color: rgba(0, 0, 0, 0.04);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b2622' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 0.7rem;
 }
 /* 显式设置选项配色，保证弹层可读 */
 .select select option { background: #faf6f0; color: var(--fg); }
 
 /* 滑块 / range */
-.range-row { display: grid; grid-template-columns: 4.5rem 1fr 2.6rem; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; font-size: 0.82rem; }
-.range-row span { color: var(--fg-dim); }
+.range-row { display: grid; grid-template-columns: 5.9rem 1fr 2.6rem; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; font-size: 0.82rem; }
+.range-row span { color: var(--fg-dim); white-space: nowrap; }
 .range-row output { text-align: right; font-size: 0.74rem; color: var(--fg); font-variant-numeric: tabular-nums; font-family: ui-monospace, Menlo, Consolas, monospace; }
 input[type=range] {
   -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
